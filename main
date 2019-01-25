@@ -1,0 +1,75 @@
+async function activateLogin() {
+
+
+	if (($w("#usernameInput").value.length === 7)) {
+			
+		//activate loading icon
+		showLoadingIcon();
+		updateMessage("0%");
+
+		//get tokens
+		let tokens = await getStartTokens();
+		updateMessage("25%");
+
+		//get classes
+		let getClassesReturn = await getClasses($w("#usernameInput").value, $w("#passwordInput").value, tokens.session_id, tokens.apache_token);
+		updateMessage("50%");
+
+		allClasses = getClassesReturn.allClasses;
+
+		if (!(allClasses.length === 0)) {
+
+			allPercentages = getClassesReturn.allPercentages;
+			let classIds = getClassesReturn.classIds;
+			let oid = getClassesReturn.oid;
+			let increment = Math.floor(50/classIds.length);
+			
+			//get assignments for each class
+			for (let x = 0; x < classIds.length; x++) {
+				let rawGetClassAssignments = await getClassAssignments(tokens.session_id, classIds[x], oid);
+				updateMessage("" + (parseInt($w("#message").text, 10) + increment) + "%");
+				allAssignments.push(rawGetClassAssignments.assignments);
+				allCategories.push(rawGetClassAssignments.categories);
+				allScores.push(rawGetClassAssignments.scores);
+				allMaxScores.push(rawGetClassAssignments.maxScores);
+				allConstCategories.push(rawGetClassAssignments.constCategories);
+				allConstWeights.push(rawGetClassAssignments.constWeights)
+			}
+
+			hideEverything();
+			hideLoadingIcon();
+			hideMessage();
+			showClassesPage();
+			$w("#usernameInput").value = "";
+			$w("#passwordInput").value = "";
+
+		} else {
+			
+			updateMessage("Incorrect Login Information");
+			setTimeout(function() {
+				hideMessage("fade");
+				$w("#loadingIcon").hide("fade");
+			}, 1000);
+		}
+	
+	} else {
+		updateMessage("Username should be seven characters long");
+		
+		setTimeout(function() {
+			hideMessage("fade");
+		}, 1000);
+
+	}
+
+	
+		
+			
+	
+
+	//error message if login incorrect length
+	// } else {
+	// 	
+		
+		
+	// }
+}
