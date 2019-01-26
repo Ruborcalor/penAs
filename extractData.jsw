@@ -16,20 +16,18 @@ let cheerio = require('cheerio');
 	let waits = [], files = [];
 	//get possible session_ids and apache_tokens
 	for (let i = 0; i < 5; i++) {
-		waits[i] = fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"}).then(response => files[i] = response.text());
+		waits[i] = fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"}).then(response => response.text()).then(response => files[i] = response);
 	}
 	let tokens = [];
 	for (let j = 0; j < waits.length; j++) {
 		await waits[j];
 	}
-
-	for (file in files) {
-
-    let session_id = file.substr(file.indexOf("jsessionid=") + "jsessionid=".length, 32);
-    let apache_token = file.substr(file.indexOf("TOKEN\" value=\"") + "TOKEN\" value=\"".length, 32);
-		tokens.push({session_id, apache_token});
+	for (let i = 0; i < files.length; i++) {
+    let session_id = files[i].substr(files[i].indexOf("jsessionid=") + "jsessionid=".length, 32);
+    let apache_token = files[i].substr(files[i].indexOf("TOKEN\" value=\"") + "TOKEN\" value=\"".length, 32);
+		tokens[i] = {session_id, apache_token};
 	}
-    
+   	console.log("tokens:"); 
 	console.log( tokens);
 }
 getStartTokens();
