@@ -18,22 +18,40 @@ let cheerio = require('cheerio');
 	for (let i = 0; i < 5; i++) {
 		waits[i] = fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"}).then(response => response.text()).then(function(response) {
 			tokens[i] = {
-				"session_id": response.substr(response.indexOf("jsessionid=") + "jsessionid=".length, 32),
-				"apache_token": response.substr(response.indexOf("TOKEN\" value=\"") + "TOKEN\" value=\"".length, 32)
+				session_id: response.substr(response.indexOf("jsessionid=") + "jsessionid=".length, 32),
+				apache_token: response.substr(response.indexOf("TOKEN\" value=\"") + "TOKEN\" value=\"".length, 32)
 			};
 			console.log(tokens[i]);
 			
-			////activate session_id and apache_token
-			//fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{"Origin" : "https://aspen.cpsd.us" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Cookie" : "deploymentId=x2sis; JSESSIONID=" + session_id, "Connection" : "keep-alive" , "X-Do-Not-Track" : "1" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Content-Type" : "application/x-www-form-urlencoded" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "Cache-Control" : "max-age=0" , "Referer" : "https://aspen.cpsd.us/aspen/logon.do" , "DNT" : "1"},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":"org.apache.struts.taglib.html.TOKEN=" + apache_token + "&userEvent=930&userParam=&operationId=&deploymentId=x2sis&scrollX=0&scrollY=0&formFocusField=username&mobile=false&SSOLoginDone=&username=" + username + "&password=" + password,"method":"POST","mode":"cors"})
-			//.then(function(response) {
-    			//	let $ = [];	
-			//	fetch("https://aspen.cpsd.us/aspen/portalClassList.do?navkey=academics.classes.list", {"credentials":"include","headers":{"Cookie" : "deploymentId=x2sis; JSESSIONID=" + session_id , "DNT" : "1" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Referer" : "https://aspen.cpsd.us/aspen/home.do" , "Connection" : "keep-alive" , "X-Do-Not-Track" : "1"},"referrer":"https://aspen.cpsd.us/aspen/home.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"})
-			//	.then(loadedResponse => loadedResponse.text()).then(function(loadedResponse) {
-			//		$[i] = cheerio.load(loadedResponse);	
-			//		console.log($[i]);
-			//	});
-			//	
-			//});
+			//activate session_id and apache_token
+			fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{"Origin" : "https://aspen.cpsd.us" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Cookie" : "deploymentId=x2sis; JSESSIONID=" + tokens[i].session_id, "Connection" : "keep-alive" , "X-Do-Not-Track" : "1" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Content-Type" : "application/x-www-form-urlencoded" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "Cache-Control" : "max-age=0" , "Referer" : "https://aspen.cpsd.us/aspen/logon.do" , "DNT" : "1"},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":"org.apache.struts.taglib.html.TOKEN=" + tokens[i].apache_token + "&userEvent=930&userParam=&operationId=&deploymentId=x2sis&scrollX=0&scrollY=0&formFocusField=username&mobile=false&SSOLoginDone=&username=" + username + "&password=" + password,"method":"POST","mode":"cors"})
+			.then(function(response) {
+    				let $ = [], allClasses = [], allPercentages = [];	
+				fetch("https://aspen.cpsd.us/aspen/portalClassList.do?navkey=academics.classes.list", {"credentials":"include","headers":{"Cookie" : "deploymentId=x2sis; JSESSIONID=" + tokens[i].session_id, "DNT" : "1" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Referer" : "https://aspen.cpsd.us/aspen/home.do" , "Connection" : "keep-alive" , "X-Do-Not-Track" : "1"},"referrer":"https://aspen.cpsd.us/aspen/home.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"})
+				.then(loadedResponse => loadedResponse.text()).then(toBeCheerio => cheerio.load(toBeCheerio)).then(function($) {
+					//console.log($);
+
+					let dataGrid = $("#dataGrid");
+					
+    					let rows = dataGrid.children().first().children().first().children();
+    				 	//console.log(rows);
+
+    					allClasses[i] = [];
+    					allPercentages[i] = [];
+
+    					rows.each(function(j, elem) {
+    					    if (j === 0 || j === rows.length - 1) {
+
+    					    } else {
+    					        allClasses[i][j - 1] = $(this).children().eq(1).text().trim();
+    					        allPercentages[i][j - 1] = $(this).children().eq(7).text().trim();
+    					    }
+    					});
+					console.log(allClasses[i]);
+
+				});
+				
+			});
 	
 
 		});
@@ -47,22 +65,8 @@ getStartTokens("8006697", "student");
 	//load login page and extract classes, grades, and class ids
 	//console.log(logon);
 	//await fetchbody("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{"Origin" : "https://aspen.cpsd.us" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Cookie" : "deploymentId=x2sis; JSESSIONID=" + session_id, "Connection" : "keep-alive" , "X-Do-Not-Track" : "1" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Content-Type" : "application/x-www-form-urlencoded" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "Cache-Control" : "max-age=0" , "Referer" : "https://aspen.cpsd.us/aspen/logon.do" , "DNT" : "1"},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":"org.apache.struts.taglib.html.TOKEN=" + apache_token + "&userEvent=930&userParam=&operationId=&deploymentId=x2sis&scrollX=0&scrollY=0&formFocusField=username&mobile=false&SSOLoginDone=&username=" + username + "&password=" + password,"method":"POST","mode":"cors"});
-    let dataGrid = $("#dataGrid");
-    let rows = dataGrid.children().first().children().first().children();
-    
-    let allClasses = [];
-    let allPercentages = [];
-
-    rows.each(function(i, elem) {
-        if (i === 0 || i === rows.length - 1) {
-
-        } else {
-            allClasses[i - 1] = $(this).children().eq(1).text().trim();
-            allPercentages[i - 1] = $(this).children().eq(7).text().trim();
-        }
-    });
-
-	//console.log("allClasses:");
+    	//console.log("allClasses:");
+	 //
 	//console.log(allClasses);
 
 	//get class Ids
