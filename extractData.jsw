@@ -1,5 +1,4 @@
-#!/bin/node
-
+#!/bin/node 
 let fetch = require('node-fetch');
 let cheerio = require('cheerio');
 
@@ -8,25 +7,34 @@ let cheerio = require('cheerio');
 //let classes = [], constCategories = [], constWeights = [], assignments = [], scores = [], maxScores = [], categories = [];
 //export async function extractData(username, password) {
 
-export async function getStartTokens() {
+ async function getStartTokens() {
 
     //declare Variables
 	let everything = [];
 	let allAssignments = [], allCategories = [], allConstCategories = [], allConstWeights = [], allScores = [], allMaxScores = [];
 
+	let waits = [], files = [];
 	//get possible session_ids and apache_tokens
-    let file = await fetchbody("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"});
+	for (let i = 0; i < 5; i++) {
+		waits[i] = fetch("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"}).then(response => files[i] = response.text());
+	}
+	let tokens = [];
+	for (let j = 0; j < waits.length; j++) {
+		await waits[j];
+	}
+
+	for (file in files) {
+
     let session_id = file.substr(file.indexOf("jsessionid=") + "jsessionid=".length, 32);
     let apache_token = file.substr(file.indexOf("TOKEN\" value=\"") + "TOKEN\" value=\"".length, 32);
+		tokens.push({session_id, apache_token});
+	}
     
-	return {
-		session_id,
-		apache_token
-	};
-
+	console.log( tokens);
 }
+getStartTokens();
 
-export async function getClasses(username, password, session_id, apache_token) {
+ async function getClasses(username, password, session_id, apache_token) {
 	
 	//activate session_id and apache_token
 	await fetchbody("https://aspen.cpsd.us/aspen/logon.do", {"credentials":"include","headers":{"Origin" : "https://aspen.cpsd.us" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Cookie" : "deploymentId=x2sis; JSESSIONID=" + session_id, "Connection" : "keep-alive" , "X-Do-Not-Track" : "1" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Content-Type" : "application/x-www-form-urlencoded" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "Cache-Control" : "max-age=0" , "Referer" : "https://aspen.cpsd.us/aspen/logon.do" , "DNT" : "1"},"referrer":"https://aspen.cpsd.us/aspen/logon.do","referrerPolicy":"strict-origin-when-cross-origin","body":"org.apache.struts.taglib.html.TOKEN=" + apache_token + "&userEvent=930&userParam=&operationId=&deploymentId=x2sis&scrollX=0&scrollY=0&formFocusField=username&mobile=false&SSOLoginDone=&username=" + username + "&password=" + password,"method":"POST","mode":"cors"});
@@ -77,7 +85,7 @@ export async function getClasses(username, password, session_id, apache_token) {
 	};
 }
 
-export async function getClassAssignments(session_id, classId, oid) {
+ async function getClassAssignments(session_id, classId, oid) {
 	
 	//console.log("initla load");
 	let $ = cheerio.load(await fetchbody("https://aspen.cpsd.us/aspen/portalClassList.do?navkey=academics.classes.list", {"credentials":"include","headers":{"Cookie" : "deploymentId=x2sis; JSESSIONID=" + session_id , "DNT" : "1" , "Accept-Encoding" : "gzip, deflate, br" , "Accept-Language" : "en-US,en" , "Upgrade-Insecure-Requests" : "1" , "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.11.2 Chrome/65.0.3325.230 Safari/537.36" , "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" , "X-DevTools-Emulate-Network-Conditions-Client-Id" : "969B8CEF25CCA839B3F22A036F8389AB" , "Referer" : "https://aspen.cpsd.us/aspen/home.do" , "Connection" : "keep-alive" , "X-Do-Not-Track" : "1"},"referrer":"https://aspen.cpsd.us/aspen/home.do","referrerPolicy":"strict-origin-when-cross-origin","body":null,"method":"GET","mode":"cors"}));
@@ -135,7 +143,7 @@ export async function getClassAssignments(session_id, classId, oid) {
 	};
 }
 
-export async function fetchbody(url, options){
+ async function fetchbody(url, options){
     return await fetch(url, options)
     .then(res => res.text());
 }
