@@ -1,0 +1,89 @@
+async function activateLogin() {
+
+
+	//if (($w("#usernameInput").value.length === 7)) {
+			
+		//activate loading icon
+	showLoadingIcon();
+	updateMessage("0%");
+
+	let tokens = [];
+	let wait = [];
+	let classIds, oid;
+	//get tokens
+
+	for (let i = 0; i < 6; i++) {
+		wait[i] = getStartTokens($w("#usernameInput").value, $w("#passwordInput").value).then(response => tokens[i] = response);
+	}
+
+	for (let i = 0; i < wait.length; i++) {
+		await wait[i];
+	}
+	
+	console.log(tokens);
+
+
+
+	updateMessage("33%");
+
+	//get classes
+	
+	wait[0] = getClasses($w("#usernameInput").value, $w("#passwordInput").value, tokens[0].session_id, tokens[0].apache_token).then(function(response) {
+		allClasses = response.allClasses;
+		allPercentages = response.allPercentages;
+		classIds = response.classIds;
+		oid = response.oid;
+	});
+	
+
+	await wait[0];
+	
+	updateMessage("66%");
+	console.log("classess: ");
+	console.log(allClasses);
+	console.log(allPercentages);
+	console.log(classIds);
+	console.log(oid);
+
+	if (!(allClasses.length === 0)) {
+		
+		//get assignments for each class
+		for (let i = 0; i < classIds.length; i++) {
+			console.log("get assignments " + i);
+
+			wait[i] = getClassAssignments(tokens[i].session_id, classIds[i], oid).then(function(response) {
+				allAssignments[i] = response.assignments;
+				allCategories[i] = response.categories;
+				allScores[i] = response.scores;
+				allMaxScores[i] = response.maxScores;
+				allConstCategories[i] = response.constCategories;
+				allConstWeights[i] = response.constWeights;
+			});
+
+			
+		}
+
+		for (let i = 0; i < classIds.length; i++) {
+			console.log("wait " + i);
+			await wait[i];
+		}
+
+		
+		updateMessage("100%");
+
+		hideEverything();
+		hideLoadingIcon();
+		hideMessage();
+		showClassesPage();
+		$w("#usernameInput").value = "";
+		$w("#passwordInput").value = "";
+
+	} else {
+		
+		updateMessage("Incorrect Login Information");
+		setTimeout(function() {
+			hideMessage("fade");
+			$w("#loadingIcon").hide("fade");
+		}, 1000);
+	}
+}
