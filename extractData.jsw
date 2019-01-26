@@ -1,6 +1,7 @@
-// Filename: backend/hideNewInputs.jsw (web modules need to have a .jsw extension)
-import {fetch} from 'wix-fetch';
-import cheerio from 'cheerio'
+#!/bin/node
+
+let fetch = require('node-fetch');
+let cheerio = require('cheerio');
 
 
 //cheerio = require('cheerio');
